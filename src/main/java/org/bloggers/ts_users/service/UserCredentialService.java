@@ -8,7 +8,7 @@ import org.bloggers.ts_users.dto.response.SuccessResponse;
 import org.bloggers.ts_users.dto.response.UserCreatedResponse;
 import org.bloggers.ts_users.dto.response.UserCredentialResponse;
 
-public interface UserService {
+public interface UserCredentialService {
 
     SuccessResponse<UserCreatedResponse> createUserCredential(CreateUserCredentialRequest request);
 

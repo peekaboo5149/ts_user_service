@@ -13,4 +13,14 @@ public class SuccessResponse<T> {
 
     @Builder.Default
     private Instant timestamp = Instant.now();
+
+    public static <T> SuccessResponse<T> success(T data) {
+        return SuccessResponse.<T>builder()
+                .message("Success")
+                .data(data).build();
+    }
+
+    public static <T> SuccessResponse<T> success(String message, T data) {
+        return SuccessResponse.<T>builder().message(message).data(data).build();
+    }
 }

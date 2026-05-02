@@ -18,7 +18,7 @@ import org.bloggers.ts_users.exceptions.ResourceConflictException;
 import org.bloggers.ts_users.exceptions.ResourceNotFoundException;
 import org.bloggers.ts_users.factories.UserIdentifierStrategyFactory;
 import org.bloggers.ts_users.repositories.UserProfileRepository;
-import org.bloggers.ts_users.service.UserService;
+import org.bloggers.ts_users.service.UserCredentialService;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-class UserServiceImpl implements UserService {
+class UserCredentialServiceImpl implements UserCredentialService {
 
     private final UserProfileRepository repository;
     private final PasswordEncoder passwordEncoder;
@@ -50,6 +50,7 @@ class UserServiceImpl implements UserService {
                 )
                 .role(Role.USER)
                 .build());
+        log.info("New User saved {} at {}", user.getId(), user.getCreatedAt());
         return SuccessResponse.<UserCreatedResponse>builder()
                 .message("User created successfully")
                 .data(UserCreatedResponse.builder()
@@ -76,9 +77,6 @@ class UserServiceImpl implements UserService {
     @Override
     public boolean validatePasswordByIdentifier(IdentifierType type, String identifierValue, String rawPassword) {
         var user = getUser(identifierValue, type);
-        if (!user.isActive() || user.isDeleted()) {
-            throw new OperationOnDisabledResourceException("User is inactive or deleted");
-        }
         return passwordEncoder.matches(
                 rawPassword,
                 user.getCredentials().getPasswordHash()
@@ -150,9 +148,13 @@ class UserServiceImpl implements UserService {
     }
 
     private UserProfile getUser(String value, IdentifierType type) {
-        return factory.getStrategy(type)
+        UserProfile user = factory.getStrategy(type)
                 .find(value)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid Credentials"));
+        if (!user.isActive() || user.isDeleted()) {
+            throw new ResourceNotFoundException("Invalid Credentials");
+        }
+        return user;
 
     }
 }

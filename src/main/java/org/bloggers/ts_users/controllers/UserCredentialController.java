@@ -11,7 +11,7 @@ import org.bloggers.ts_users.dto.request.ValidatePasswordRequest;
 import org.bloggers.ts_users.dto.response.SuccessResponse;
 import org.bloggers.ts_users.dto.response.UserCreatedResponse;
 import org.bloggers.ts_users.dto.response.UserCredentialResponse;
-import org.bloggers.ts_users.service.UserService;
+import org.bloggers.ts_users.service.UserCredentialService;
 import org.bloggers.ts_users.validation.ValidEnum;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,17 +19,17 @@ import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/user-credentials")
 @AllArgsConstructor
-class UserController {
+class UserCredentialController {
 
-    private final UserService userService;
+    private final UserCredentialService userCredentialService;
 
     @PostMapping("/create")
     ResponseEntity<SuccessResponse<UserCreatedResponse>> createUserCredential(
             @Valid @RequestBody CreateUserCredentialRequest request
     ) {
-        return ResponseEntity.ok(userService.createUserCredential(request));
+        return ResponseEntity.ok(userCredentialService.createUserCredential(request));
     }
 
     @GetMapping
@@ -41,7 +41,7 @@ class UserController {
             String value
     ) {
 
-        return ResponseEntity.ok(userService.getByIdentifier(value, IdentifierType.valueOf(type.toUpperCase())));
+        return ResponseEntity.ok(userCredentialService.getByIdentifier(value, IdentifierType.valueOf(type.toUpperCase())));
     }
 
     @HideResponseLog
@@ -49,7 +49,7 @@ class UserController {
     ResponseEntity<SuccessResponse<Boolean>> validatePassword(
             @Valid @RequestBody ValidatePasswordRequest request
     ) {
-        boolean isValid = userService.validatePasswordByIdentifier(
+        boolean isValid = userCredentialService.validatePasswordByIdentifier(
                 request.getType(),
                 request.getIdentifierValue(),
                 request.getPassword()
@@ -62,14 +62,14 @@ class UserController {
             @PathVariable String id,
             @Valid @RequestBody UpdateUserCredentialRequest request
     ) {
-        return ResponseEntity.ok(userService.updateCredential(id, request));
+        return ResponseEntity.ok(userCredentialService.updateCredential(id, request));
     }
 
     @DeleteMapping("/{id}")
     ResponseEntity<SuccessResponse<String>> deleteUserCredential(
             @PathVariable String id
     ) {
-        userService.softDeleteUserById(id);
+        userCredentialService.softDeleteUserById(id);
         return ResponseEntity.ok(SuccessResponse.<String>builder().message("User deleted successfully").build());
     }
 }

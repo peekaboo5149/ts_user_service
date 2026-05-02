@@ -13,8 +13,13 @@ import java.util.Optional;
 public interface UserProfileRepository extends MongoRepository<UserProfile, String> {
 
     Optional<UserProfile> findByCredentialsEmail(String email);
+
     Optional<UserProfile> findByCredentialsUsername(String username);
-    Optional<UserProfile> findByCredentialsEmailAndIsActiveTrueAndIsDeletedFalse(String email);
+
+    Optional<UserProfile> findByIdAndIsActiveTrueAndIsDeletedFalse(String email);
+
     Page<UserProfile> findByIsActiveTrueAndIsDeletedFalse(Pageable pageable);
+
     Page<UserProfile> findByIsActiveTrueAndIsDeletedFalseAndRole(Role role, Pageable pageable);
+
 }
