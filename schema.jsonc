@@ -1,0 +1,25 @@
+// User
+{
+  "_id": "ObjectId",
+  "credentials": {
+    "email": "string",
+    "password": "string",
+    "username": "string"
+  },
+  "roles": "ADMIN | USER",
+  "isActive": "boolean",
+  "isDeleted": "boolean",
+  "bio": "string",
+  "photoUrl": "string",
+  "coverPhotoUrl": "string",
+  "location": "string",
+  "social": {
+    "website": "string",
+    "githubUrl": "string",
+    "linkedinUrl": "string",
+    "facebookUrl": "string",
+    "twitterUrl": "string"
+  },
+  "createdAt": "Date",
+  "updatedAt": "Date"
+}
