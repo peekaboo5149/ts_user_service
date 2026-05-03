@@ -16,6 +16,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
@@ -69,6 +70,12 @@ class GlobalExceptionHandler {
     ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
         log.warn("Method not allowed on {}: {}", request.getRequestURI(), ex.getMessage());
         return buildResponse(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    ResponseEntity<ErrorResponse> handleNoHandlerFound(NoHandlerFoundException ex, HttpServletRequest request) {
+        log.warn("No handler found for {} {}", ex.getHttpMethod(), ex.getRequestURL());
+        return buildResponse(HttpStatus.NOT_FOUND, "Endpoint not found", request);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

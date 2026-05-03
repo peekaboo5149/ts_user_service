@@ -1,3 +1,6 @@
+logging:
+  level.root: info
+
 spring:
   application:
     name: ts_user_service
@@ -6,3 +9,31 @@ spring:
   data:
     mongodb:
       auto-index-creation: true
+
+management:
+  prometheus:
+    metrics:
+      export:
+        properties:
+          io:
+            prometheus:
+              exporter:
+                exemplarsOnAllMetricTypes: false
+  server:
+    port: 10103
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: "health,prometheus,info,db,metrics"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+mandatory:
+  headers:
+    routesToSkip:
+      - "/actuator"
+    startsWith:
+      - "/actuator/"

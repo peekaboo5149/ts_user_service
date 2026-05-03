@@ -3,7 +3,7 @@ package org.bloggers.ts_users.controllers;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import org.bloggers.ts_users.annotations.HideResponseLog;
+import org.bloggers.ts_users.annotations.HideResponse;
 import org.bloggers.ts_users.dto.request.CreateUserCredentialRequest;
 import org.bloggers.ts_users.dto.request.IdentifierType;
 import org.bloggers.ts_users.dto.request.UpdateUserCredentialRequest;
@@ -44,7 +44,7 @@ class UserCredentialController {
         return ResponseEntity.ok(userCredentialService.getByIdentifier(value, IdentifierType.valueOf(type.toUpperCase())));
     }
 
-    @HideResponseLog
+    @HideResponse
     @PostMapping("/validate-password")
     ResponseEntity<SuccessResponse<Boolean>> validatePassword(
             @Valid @RequestBody ValidatePasswordRequest request
