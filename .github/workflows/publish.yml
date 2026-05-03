@@ -1,7 +1,10 @@
 name: Publish Image
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
     branches:
       - main
       - release/*
@@ -9,6 +12,7 @@ on:
 
 jobs:
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,6 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
       - name: Determine conventional commit type
@@ -47,7 +52,8 @@ jobs:
         id: suffix
         if: steps.commit.outputs.publish == 'true'
         run: |
-          BRANCH="${GITHUB_REF_NAME}"
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          BRANCH="${BRANCH#refs/heads/}"
           if [[ "$BRANCH" == release/* ]]; then
             echo "suffix=-release" >> "$GITHUB_OUTPUT"
           elif [[ "$BRANCH" == dev ]]; then
