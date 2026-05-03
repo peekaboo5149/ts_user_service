@@ -26,10 +26,11 @@ management:
   server:
     port: 10103
   endpoints:
-    enabled-by-default: true
     web:
       exposure:
         include: "health,prometheus,info,db,metrics"
+    access:
+      default: read_only
   endpoint:
     health:
       probes:
