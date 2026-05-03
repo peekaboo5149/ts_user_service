@@ -1,0 +1,44 @@
+# Git
+.git/
+.gitattributes
+.gitignore
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Build outputs
+build/
+out/
+*.class
+
+# Gradle cache
+.gradle/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+schema.jsonc
+
+# Docker files
+Dockerfile
+.dockerignore
+docker-compose.yaml
+
+# Local config
+*.local.yaml
+*.local.yml
+*.local.properties
+
+# Test reports
+test-results/
+reports/
+
+# Logs
+*.log
