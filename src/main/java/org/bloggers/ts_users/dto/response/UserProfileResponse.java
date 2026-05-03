@@ -31,6 +31,7 @@ public class UserProfileResponse {
         private String bio;
         private String photoUrl;
         private String coverPhotoUrl;
+        @Builder.Default
         private Location location = new Location();
     }
 
