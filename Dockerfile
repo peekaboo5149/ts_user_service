@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Builder
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:25-jdk AS builder
+FROM eclipse-temurin:25-jdk-jammy AS builder
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ RUN ./gradlew bootJar -x test --no-daemon
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:25-jre AS runtime
+FROM eclipse-temurin:25-jre-jammy AS runtime
 
 # Install curl for health checks
 RUN apt-get update \
