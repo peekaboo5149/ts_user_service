@@ -160,12 +160,10 @@ class UserCredentialServiceImpl implements UserCredentialService {
     @Transactional
     @Override
     public void softDeleteUserById(@NotNull String id) {
-        UserProfile user = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        var user = getUser(id, IdentifierType.ID);
         user.setDeleted(true);
         user.setActive(false);
         repository.save(user);
-
         publisher.publishEvent(new UserDeletedEvent(user.getId(), UserEventPayload.from(user)));
     }
 
