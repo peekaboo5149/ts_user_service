@@ -16,6 +16,7 @@ public class ErrorResponse {
     private int status;
     private String error;
     private String message;
+    private String detailedErrorMessage;
     private String path;
     private List<FieldError> details;
 

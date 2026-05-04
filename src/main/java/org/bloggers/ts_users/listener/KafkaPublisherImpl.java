@@ -7,10 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.bloggers.ts_users.config.UserEventsProperties;
 import org.bloggers.ts_users.dto.events.EventEnvelope;
 import org.bloggers.ts_users.dto.events.UserEvent;
+import org.bloggers.ts_users.exceptions.InternalServerException;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Component
@@ -21,7 +25,7 @@ class KafkaPublisherImpl {
     private final UserEventsProperties userEventsProperties;
     private final ObjectMapper objectMapper;
 
-    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @EventListener
     void publish(UserEvent<?> event) {
         var envelope = EventEnvelope.builder()
@@ -37,10 +41,13 @@ class KafkaPublisherImpl {
 
         try {
             String payload = objectMapper.writeValueAsString(envelope);
-            kafkaTemplate.send(topic, event.getUserId(), payload);
+            kafkaTemplate.send(topic, event.getUserId(), payload).get();
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize event envelope for userId={}", event.getUserId(), e);
-            throw new RuntimeException("Event serialization failed", e);
+            throw new InternalServerException("Event serialization failed", e.getMessage());
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("Failed to send event to Kafka topic={} for userId={}", topic, event.getUserId(), e);
+            throw new InternalServerException("Failed to send event to Kafka", e.getMessage());
         }
     }
 }

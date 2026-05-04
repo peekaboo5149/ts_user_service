@@ -27,6 +27,7 @@ import org.bloggers.ts_users.service.UserCredentialService;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -38,10 +39,11 @@ class UserCredentialServiceImpl implements UserCredentialService {
     private final UserIdentifierStrategyFactory factory;
     private final EventPublisher publisher;
 
+    @Transactional
     @Override
     public SuccessResponse<UserCreatedResponse> createUserCredential(CreateUserCredentialRequest request) {
         repository.findByCredentialsEmail(request.getEmail()).or(() -> repository.findByCredentialsUsername(request.getUsername()))
-                .ifPresent(u -> {
+                .ifPresent(_ -> {
                     throw new ResourceConflictException("User already exist");
                 });
 
@@ -92,6 +94,7 @@ class UserCredentialServiceImpl implements UserCredentialService {
         );
     }
 
+    @Transactional
     @Override
     public SuccessResponse<UserCredentialResponse> updateCredential(
             @NotNull String userId,
@@ -154,6 +157,7 @@ class UserCredentialServiceImpl implements UserCredentialService {
                 .build();
     }
 
+    @Transactional
     @Override
     public void softDeleteUserById(@NotNull String id) {
         UserProfile user = repository.findById(id)

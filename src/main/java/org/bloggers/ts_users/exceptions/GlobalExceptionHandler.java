@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.bloggers.ts_users.dto.response.ErrorResponse;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,9 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiBaseException.class)
     ResponseEntity<ErrorResponse> handleApiBaseException(ApiBaseException ex, HttpServletRequest request) {
+        if (StringUtils.isNotBlank(ex.getDetailedErrorMessage())) {
+            return buildResponseWithDetailedErrorMessage(ex.getStatus(), ex.getMessage(), ex.getDetailedErrorMessage(), request, null);
+        }
         return buildResponse(ex.getStatus(), ex.getMessage(), request);
     }
 
@@ -100,6 +104,7 @@ class GlobalExceptionHandler {
         return buildResponse(status, message, request, null);
     }
 
+
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message, HttpServletRequest request, List<ErrorResponse.FieldError> details) {
         ErrorResponse response = ErrorResponse.builder()
                 .timestamp(Instant.now())
@@ -112,6 +117,27 @@ class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(response);
     }
+
+
+    private ResponseEntity<ErrorResponse> buildResponseWithDetailedErrorMessage(HttpStatus status, String message,
+                                                                                String detailedErrorMessage,
+                                                                                HttpServletRequest request,
+                                                                                List<ErrorResponse.FieldError> details) {
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .detailedErrorMessage(detailedErrorMessage)
+                .message(message)
+                .path(request.getRequestURI())
+                .details(details)
+                .build();
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+
+
 
     private ErrorResponse.FieldError mapFieldError(FieldError error) {
         return ErrorResponse.FieldError.builder()
