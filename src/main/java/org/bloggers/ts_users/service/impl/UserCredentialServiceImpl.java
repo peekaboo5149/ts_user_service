@@ -4,6 +4,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.bloggers.ts_users.dto.events.UserCreatedEvent;
+import org.bloggers.ts_users.dto.events.UserDeletedEvent;
+import org.bloggers.ts_users.dto.events.UserEventPayload;
+import org.bloggers.ts_users.dto.events.UserUpdatedEvent;
 import org.bloggers.ts_users.dto.request.CreateUserCredentialRequest;
 import org.bloggers.ts_users.dto.request.IdentifierType;
 import org.bloggers.ts_users.dto.request.UpdateUserCredentialRequest;
@@ -18,6 +22,7 @@ import org.bloggers.ts_users.exceptions.ResourceConflictException;
 import org.bloggers.ts_users.exceptions.ResourceNotFoundException;
 import org.bloggers.ts_users.factories.UserIdentifierStrategyFactory;
 import org.bloggers.ts_users.repositories.UserProfileRepository;
+import org.bloggers.ts_users.service.EventPublisher;
 import org.bloggers.ts_users.service.UserCredentialService;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +36,7 @@ class UserCredentialServiceImpl implements UserCredentialService {
     private final UserProfileRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final UserIdentifierStrategyFactory factory;
+    private final EventPublisher publisher;
 
     @Override
     public SuccessResponse<UserCreatedResponse> createUserCredential(CreateUserCredentialRequest request) {
@@ -51,6 +57,9 @@ class UserCredentialServiceImpl implements UserCredentialService {
                 .role(Role.USER)
                 .build());
         log.info("New User saved {} at {}", user.getId(), user.getCreatedAt());
+
+        publisher.publishEvent(new UserCreatedEvent(user.getId(), UserEventPayload.from(user)));
+
         return SuccessResponse.<UserCreatedResponse>builder()
                 .message("User created successfully")
                 .data(UserCreatedResponse.builder()
@@ -99,17 +108,20 @@ class UserCredentialServiceImpl implements UserCredentialService {
         var credentials = user.getCredentials();
 
         boolean updated = false;
+        boolean nonPasswordUpdated = false;
 
         if (StringUtils.isNotBlank(request.getUsername())) {
             String username = request.getUsername().trim();
             credentials.setUsername(username);
             updated = true;
+            nonPasswordUpdated = true;
         }
 
         if (StringUtils.isNotBlank(request.getEmail())) {
             String email = request.getEmail().trim().toLowerCase();
             credentials.setEmail(email);
             updated = true;
+            nonPasswordUpdated = true;
         }
 
         if (StringUtils.isNotBlank(request.getPassword())) {
@@ -126,6 +138,10 @@ class UserCredentialServiceImpl implements UserCredentialService {
             repository.save(user);
         } catch (DuplicateKeyException ex) {
             throw new ResourceConflictException("Email or username already exists");
+        }
+
+        if (nonPasswordUpdated) {
+            publisher.publishEvent(new UserUpdatedEvent(user.getId(), UserEventPayload.from(user)));
         }
 
         return SuccessResponse.<UserCredentialResponse>builder()
@@ -145,6 +161,8 @@ class UserCredentialServiceImpl implements UserCredentialService {
         user.setDeleted(true);
         user.setActive(false);
         repository.save(user);
+
+        publisher.publishEvent(new UserDeletedEvent(user.getId(), UserEventPayload.from(user)));
     }
 
     private UserProfile getUser(String value, IdentifierType type) {

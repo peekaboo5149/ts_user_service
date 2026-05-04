@@ -1,11 +1,21 @@
 logging:
-  level.root: info
+  level:
+    root: info
+    org.springframework.kafka: INFO
+    org.apache.kafka.common.config: WARN
 
 spring:
   application:
     name: ts_user_service
   mongodb:
     uri: mongodb://user:pass@localhost:27017/user_db?authSource=admin
+  kafka:
+    bootstrap-servers: localhost:9092
+    admin:
+      auto-create: true
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   data:
     mongodb:
       auto-index-creation: true
@@ -22,10 +32,11 @@ management:
   server:
     port: 10103
   endpoints:
-    enabled-by-default: true
     web:
       exposure:
         include: "health,prometheus,info,db,metrics"
+    access:
+      default: read_only
   endpoint:
     health:
       probes:
@@ -37,3 +48,8 @@ mandatory:
       - "/actuator"
     startsWith:
       - "/actuator/"
+
+app:
+  events:
+    user-events:
+      topic_name: user-event-topic

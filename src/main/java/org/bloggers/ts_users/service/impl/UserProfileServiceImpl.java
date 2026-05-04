@@ -2,6 +2,8 @@ package org.bloggers.ts_users.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.bloggers.ts_users.dto.events.UserEventPayload;
+import org.bloggers.ts_users.dto.events.UserUpdatedEvent;
 import org.bloggers.ts_users.dto.request.UpdateProfileRequest;
 import org.bloggers.ts_users.dto.response.SuccessResponse;
 import org.bloggers.ts_users.dto.response.UserProfileResponse;
@@ -9,6 +11,7 @@ import org.bloggers.ts_users.entities.Role;
 import org.bloggers.ts_users.entities.UserProfile;
 import org.bloggers.ts_users.exceptions.ResourceNotFoundException;
 import org.bloggers.ts_users.repositories.UserProfileRepository;
+import org.bloggers.ts_users.service.EventPublisher;
 import org.bloggers.ts_users.service.UserProfileService;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Component;
 class UserProfileServiceImpl implements UserProfileService {
 
     private final UserProfileRepository userProfileRepository;
+    private final EventPublisher eventPublisher;
 
     @Override
     public SuccessResponse<UserProfileResponse> getProfileByUserId(String userId) {
@@ -64,6 +68,8 @@ class UserProfileServiceImpl implements UserProfileService {
         }
 
         var updatedUser = userProfileRepository.save(user);
+
+        eventPublisher.publishEvent(new UserUpdatedEvent(updatedUser.getId(), UserEventPayload.from(updatedUser)));
 
         return SuccessResponse.<UserProfileResponse>builder()
                 .message("User profile updated successfully")

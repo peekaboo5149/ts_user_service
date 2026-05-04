@@ -1,11 +1,12 @@
 package org.bloggers.ts_users;
 
-import org.bloggers.ts_users.config.MandatoryHeadersProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.scheduling.annotation.EnableAsync;
 
-@EnableConfigurationProperties(MandatoryHeadersProperties.class)
+@EnableAsync
+@ConfigurationPropertiesScan("org.bloggers.ts_users.config")
 @SpringBootApplication
 public class TsUserServiceApplication {
 

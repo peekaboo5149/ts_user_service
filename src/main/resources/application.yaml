@@ -1,5 +1,8 @@
 logging:
-  level.root: info
+  level:
+    root: info
+    org.springframework.kafka: INFO
+    org.apache.kafka.common.config: WARN
 
 spring:
   application:
@@ -9,6 +12,13 @@ spring:
       add-mappings: false
   mongodb:
     uri: ${TS_USER_SERVICE_MONGODB_URI}
+  kafka:
+    bootstrap-servers: ${TS_USER_SERVICE_KAFKA_BOOTSTRAP_SERVERS}
+    admin:
+      auto-create: false
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   data:
     mongodb:
       auto-index-creation: true
@@ -42,3 +52,8 @@ mandatory:
       - "/actuator"
     startsWith:
       - "/actuator/"
+
+app:
+  events:
+    user-events:
+      topic_name: ${TS_USER_SERVICE_USER_EVENT_TOPIC_NAME}

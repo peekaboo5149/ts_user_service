@@ -28,7 +28,7 @@ class CachedBodyServletOutputStream extends ServletOutputStream {
     }
 
     /**
-     * Set the write listener.
+     * Set the write org.bloggers.ts_users.listener.
      *
      * @param b byte array.
      * @throws IOException io exception.
@@ -40,9 +40,9 @@ class CachedBodyServletOutputStream extends ServletOutputStream {
     }
 
     /**
-     * Set the write listener.
+     * Set the write org.bloggers.ts_users.listener.
      *
-     *  @param writeListener write listener.
+     *  @param writeListener write org.bloggers.ts_users.listener.
      *  @throws UnsupportedOperationException unsupported operation exception.
      */
     @Override
