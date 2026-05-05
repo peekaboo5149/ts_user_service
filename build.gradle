@@ -46,6 +46,18 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
+tasks.register('copyGitHooks', Copy) {
+	from '.githooks'
+	into '.git/hooks'
+	doLast {
+		file('.git/hooks').listFiles().each { it.setExecutable(true) }
+	}
+}
+
+tasks.named('build') {
+	dependsOn 'copyGitHooks'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
