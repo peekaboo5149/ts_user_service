@@ -10,6 +10,8 @@ import org.bloggers.ts_users.dto.events.UserEvent;
 import org.bloggers.ts_users.exceptions.InternalServerException;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -41,7 +43,14 @@ class KafkaPublisherImpl {
 
         try {
             String payload = objectMapper.writeValueAsString(envelope);
-            kafkaTemplate.send(topic, event.getUserId(), payload).get();
+
+            var message = MessageBuilder
+                    .withPayload(payload)
+                    .setHeader(KafkaHeaders.TOPIC, topic)
+                    .setHeader(KafkaHeaders.KEY, event.getUserId())
+                    .setHeader("eventType", event.getType().name())
+                    .build();
+            kafkaTemplate.send(message).get();
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize event envelope for userId={}", event.getUserId(), e);
             throw new InternalServerException("Event serialization failed", e.getMessage());
