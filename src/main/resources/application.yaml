@@ -16,6 +16,10 @@ spring:
     bootstrap-servers: ${TS_USER_SERVICE_KAFKA_BOOTSTRAP_SERVERS}
     admin:
       auto-create: false
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: SCRAM-SHA-256
+      sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="${TS_USER_SERVICE_KAFKA_USERNAME}" password="${TS_USER_SERVICE_KAFKA_PASSWORD}";
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
