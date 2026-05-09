@@ -10,6 +10,10 @@ on:
       - release/*
       - dev
 
+concurrency:
+  group: publish-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
 jobs:
   build:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
