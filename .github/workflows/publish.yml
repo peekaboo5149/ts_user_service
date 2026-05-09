@@ -26,30 +26,35 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
-      - name: Determine branch suffix
-        id: suffix
+      - name: Make scripts executable
         run: |
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-
-          if [[ "$BRANCH" == release/* ]]; then
-            echo "suffix=-release" >> "$GITHUB_OUTPUT"
-          elif [[ "$BRANCH" == dev ]]; then
-            echo "suffix=-dev" >> "$GITHUB_OUTPUT"
-          else
-            echo "suffix=" >> "$GITHUB_OUTPUT"
-          fi
+          chmod +x .github/scripts/generate-tag.sh
 
       - name: Generate Docker tag
         id: generate_tag
         run: |
-          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
-          SHORT_SHA=$(git rev-parse --short HEAD)
-
-          VERSION="${TIMESTAMP}-${SHORT_SHA}${{ steps.suffix.outputs.suffix }}"
+          VERSION=$(
+            .github/scripts/generate-tag.sh \
+            "${{ github.event.workflow_run.head_branch }}" \
+            "${{ github.event.workflow_run.head_sha }}"
+          )
 
           echo "Generated tag: $VERSION"
-          echo "VERSION=$VERSION"
+
           echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Determine latest tag
+        id: latest_tag
+        run: |
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+
+          if [[ "$BRANCH" == release/* ]]; then
+            echo "LATEST_TAG=latest-release" >> "$GITHUB_OUTPUT"
+          elif [[ "$BRANCH" == dev ]]; then
+            echo "LATEST_TAG=latest-dev" >> "$GITHUB_OUTPUT"
+          else
+            echo "LATEST_TAG=latest" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -69,5 +74,12 @@ jobs:
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
+
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ steps.generate_tag.outputs.VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ steps.latest_tag.outputs.LATEST_TAG }}
+
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
+            org.opencontainers.image.created=${{ github.run_id }}
