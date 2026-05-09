@@ -1,0 +1,10 @@
+{
+  "workflow_run": {
+    "conclusion": "success",
+    "head_sha": "77131863de0a5c2a6b1697203a45052d85112aa1",
+    "head_branch": "main"
+  },
+  "repository": {
+    "name": "ts_graph"
+  }
+}
